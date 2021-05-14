@@ -11,7 +11,7 @@ var (
 
 func Configure(){
 	router = gin.Default()
-	router.GET("/upload", handleUpload)
+	router.POST("/upload", handleUpload)
 }
 
 func ListenAndServe() error {
