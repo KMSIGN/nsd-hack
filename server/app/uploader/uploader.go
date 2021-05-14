@@ -8,8 +8,8 @@ import (
 	"nsd-hack/server/app/file"
 )
 
-func ServeFileLoader(filename string, hashes string) (int, error) {
-	pt, err := GetFreePort()
+func SrvFileLoader(filename string, hashes string) (int, error) {
+	pt, err := getFreePort()
 	if err != nil { return 0, err }
 	addr := fmt.Sprintf(":%d", pt)
 	listener, err := net.Listen("tcp", addr)

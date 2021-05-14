@@ -2,7 +2,7 @@ package uploader
 
 import "net"
 
-func GetFreePort() (int, error) {
+func getFreePort() (int, error) {
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
 	if err != nil {
 		return 0, err

@@ -2,6 +2,7 @@ package file
 
 import (
 	"crypto"
+	_ "crypto/sha1"
 	"fmt"
 )
 
