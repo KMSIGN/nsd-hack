@@ -6,14 +6,17 @@ import (
 	"io"
 	"log"
 	"net"
-	"nsd-hack/server/app/file"
+
+	"github.com/KMSIGN/nsd-hack/server/app/file"
 )
 
 const PartSize = 8 * 1024 * 1024
 
 func SrvFileLoader(filename string, hashes string) (int, error) {
 	pt, err := getFreePort()
-	if err != nil { return 0, err }
+	if err != nil {
+		return 0, err
+	}
 	addr := fmt.Sprintf(":%d", pt)
 	log.Printf(addr)
 	listener, err := net.Listen("tcp", addr)
@@ -21,7 +24,7 @@ func SrvFileLoader(filename string, hashes string) (int, error) {
 		return 0, err
 	}
 
-	go func(){
+	go func() {
 		conn, _ := listener.Accept()
 		handle(conn, listener, filename, hashes)
 	}()
@@ -40,7 +43,9 @@ func handle(conn net.Conn, listener net.Listener, name string, hashes string) er
 
 		curNo := fd.GetNeededPart()
 		_, err := w.WriteString(fmt.Sprintf("%d\n", curNo))
-		if err != nil { return err}
+		if err != nil {
+			return err
+		}
 
 		r := bufio.NewReader(conn)
 		bts := make([]byte, PartSize)
@@ -52,7 +57,9 @@ func handle(conn net.Conn, listener net.Listener, name string, hashes string) er
 		}
 
 		err = fd.AddPart(bts, curNo)
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 }

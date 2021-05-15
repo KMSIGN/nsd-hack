@@ -1,11 +1,12 @@
 package api
 
 import (
+	"github.com/KMSIGN/nsd-hack/server/app/loader"
+
 	"github.com/gin-gonic/gin"
-	"nsd-hack/server/app/loader"
 )
 
-func handleUpload(c *gin.Context){
+func handleUpload(c *gin.Context) {
 	hashes := c.PostForm("hashes")
 	hash := c.PostForm("hash")
 

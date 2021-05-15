@@ -25,6 +25,5 @@ func StartUploading(addr string, name string) error {
 		fmt.Print("Message from server: "+message)
 	}
 
-
 	return nil
 }
