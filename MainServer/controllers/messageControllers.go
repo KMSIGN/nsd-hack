@@ -1,15 +1,15 @@
 package controllers
 
 import (
-"encoding/json"
-"github.com/gin-gonic/gin"
-"go-contacts/models"
-u "go-contacts/utils"
-"net/http"
+	"encoding/json"
+	"github.com/KMSIGN/nsd-hack/MainServer/models"
+	u "github.com/KMSIGN/nsd-hack/MainServer/utils"
+	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 func CreateMessage(c *gin.Context) {
-	user := c.GetInt("user") //Grab the id of the user that send the request
+	user := c.MustGet("user") //Grab the id of the user that send the request
 	message := &models.Message{}
 
 	err := json.NewDecoder(c.Request.Body).Decode(message)
@@ -18,15 +18,15 @@ func CreateMessage(c *gin.Context) {
 		return
 	}
 
-	message.UserId = user
+	message.UserId = int(user.(uint))
 	resp := message.Create()
 	c.JSON(http.StatusOK, resp)
 }
 
 func GetMessagesFor(c *gin.Context) {
 
-	id := c.GetInt("user")
-	data := models.GetMessages(id)
+	id := c.MustGet("user")
+	data := models.GetMessages(int(id.(uint)))
 	resp := u.Message(true, "success")
 	resp["data"] = data
 	c.JSON(http.StatusOK, resp)

@@ -23,6 +23,9 @@ func main() {
 	mystat.POST("/new", controllers.CreateFile)
 	mystat.GET("/list", controllers.GetFilesFor)
 	mystat.GET("/get", controllers.GetFile)
+	mystat.GET("/token", controllers.StatisticToken)
+	router.Group("/api/files").Use(app.TelegramToken).GET("/statistic", controllers.GetUserStatistic)
+
 
 	messages := router.Group("/api/messages")
 	messages.Use(app.JwtAuthentication)
