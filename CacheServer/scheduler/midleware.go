@@ -20,6 +20,7 @@ func RederictMidlerare(addr string) gin.HandlerFunc {
 			}
 
 			temp["cache"] = os.Getenv("fileserver")
+			//temp["timeout"] =
 		}
 
 		c.Redirect(http.StatusMovedPermanently, addr + c.FullPath())

@@ -111,7 +111,6 @@ func NewUploader(f *File) *UploaderFile {
 	}
 	return &UploaderFile{
 		file: f,
-		NeedsToUpload: a,
 	}
 }
 
@@ -119,16 +118,9 @@ func (fu *UploaderFile) ErrorInUploading(no int){
 	fu.NeedsToUpload = append(fu.NeedsToUpload, no)
 }
 
-func (fu *UploaderFile) GetPart() ([]byte, int, error) {
-	n := fu.getNextPartNo()
+func (fu *UploaderFile) GetPart(n int) ([]byte, error) {
 	hs := fu.file.GetHashByNo(n)
 	bts, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s", DataFolder, fu.file.Hash, hs))
-	if err != nil { return nil, -1, err}
-	return bts, n, nil
-}
-
-func (fu *UploaderFile) getNextPartNo() int {
-	var x int
-	x, fu.NeedsToUpload = fu.NeedsToUpload[0], fu.NeedsToUpload[1:]
-	return x
+	if err != nil { return nil, err }
+	return bts, nil
 }

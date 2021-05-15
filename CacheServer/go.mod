@@ -1,4 +1,4 @@
-module go-contacts
+module github.com/KMSIGN/nsd-hack/CacheServer
 
 require (
 	github.com/denisenkom/go-mssqldb v0.0.0-20191001013358-cfbb681360f0 // indirect

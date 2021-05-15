@@ -12,7 +12,8 @@ var (
 func Configure(){
 	router = gin.Default()
 	router.POST("/upload", handleUpload)
-	router.GET()
+	router.POST("/download", handleDownload)
+	router.GET("/filesCount", handleGetFilesCount)
 }
 
 func ListenAndServe() error {
