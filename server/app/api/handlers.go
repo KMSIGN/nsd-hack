@@ -7,9 +7,9 @@ import (
 
 func handleUpload(c *gin.Context){
 	hashes := c.PostForm("hashes")
-	name := nameHashing(hashes)
+	hash := c.PostForm("hash")
 
-	port, err := loader.SrvFileLoader(name, hashes)
+	port, err := loader.SrvFileLoader(hash, hashes)
 	if err != nil {
 		c.String(500, "Something go wrong")
 	}

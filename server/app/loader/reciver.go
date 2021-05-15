@@ -3,10 +3,13 @@ package loader
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"nsd-hack/server/app/file"
 )
+
+const PartSize = 8 * 1024 * 1024
 
 func SrvFileLoader(filename string, hashes string) (int, error) {
 	pt, err := getFreePort()
@@ -29,22 +32,27 @@ func handle(conn net.Conn, listener net.Listener, name string, hashes string) er
 	defer conn.Close()
 	defer listener.Close()
 
-	r := bufio.NewReader(conn)
-	scanr := bufio.NewScanner(r)
-
 	fl := file.NewFile(name, hashes)
+	fd := file.NewDownloader(&fl)
 
 	for {
-		scanned := scanr.Scan()
-		if !scanned {
-			if err := scanr.Err(); err != nil {
-				log.Printf("%v(%v)", err, conn.RemoteAddr())
-				return err
-			}
-			break
+		w := bufio.NewWriter(conn)
+
+		curNo := fd.GetNeededPart()
+		_, err := w.WriteString(fmt.Sprintf("%d\n", curNo))
+		if err != nil { return err}
+
+		r := bufio.NewReader(conn)
+		bts := make([]byte, PartSize)
+
+		n, err := r.Read(bts)
+		if err == io.EOF || n != 0 {
+			w.WriteString("end\n")
+			return nil
 		}
-		err := fl.AddPart(scanr.Bytes())
-		if err != nil {	continue }
+
+		err = fd.AddPart(bts, curNo)
+		if err != nil { return err }
+		return nil
 	}
-	return nil
 }
