@@ -7,19 +7,39 @@ import (
 	"io"
 	"log"
 	"os"
+
+	"github.com/KMSIGN/nsd-hack/go-file-handler/encrypt"
 )
 
 const bufferSize = 8 * 1024 * 1024
 
-func CalcHashMap(path string) []string {
-	f, err := os.Open(path)
+func CalcCryptHashMap(f *os.File, enc *encrypt.Aes) (filehash string, hashmap []string, err error) {
+	reader := bufio.NewReader(f)
+	buf := make([]byte, bufferSize)
 
-	if err != nil {
-		log.Fatal(err)
+	hashes := []string{}
+
+	for {
+		_, err := reader.Read(buf)
+		if err != nil {
+			if err != io.EOF {
+				log.Fatal(err)
+			}
+			break
+		}
+
+		encBuf := enc.Encrypt(buf)
+
+		hash := crypto.SHA1.New()
+		hash.Write(encBuf)
+		hashes = append(hashes, fmt.Sprintf("%x", hash.Sum(nil)))
+
 	}
 
-	defer f.Close()
+	return "", hashes, nil
+}
 
+func CalcHashMap(f *os.File) (filehash string, hashmap []string) {
 	reader := bufio.NewReader(f)
 	buf := make([]byte, bufferSize)
 	hash := crypto.SHA1.New()
@@ -41,5 +61,5 @@ func CalcHashMap(path string) []string {
 
 	}
 
-	return hashes
+	return "", hashes
 }

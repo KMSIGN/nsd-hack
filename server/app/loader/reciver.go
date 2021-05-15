@@ -1,7 +1,6 @@
 package loader
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"log"
@@ -37,29 +36,33 @@ func handle(conn net.Conn, listener net.Listener, name string, hashes string) er
 
 	fl := file.NewFile(name, hashes)
 	fd := file.NewDownloader(&fl)
+	buf := make([]byte, PartSize)
 
 	for {
-		w := bufio.NewWriter(conn)
 
 		curNo := fd.GetNeededPart()
-		_, err := w.WriteString(fmt.Sprintf("%d\n", curNo))
+		if curNo == -1 {
+			_, err := fmt.Fprintf(conn, "end\n")
+			if err != nil {
+				return err
+			}
+			break
+		}
+		_, err := fmt.Fprintf(conn, "%d\n", curNo)
 		if err != nil {
 			return err
 		}
 
-		r := bufio.NewReader(conn)
-		bts := make([]byte, PartSize)
+		io.ReadFull(conn, buf)
 
-		n, err := r.Read(bts)
-		if err == io.EOF || n != 0 {
-			w.WriteString("end\n")
-			return nil
-		}
+		//fmt.Printf("mystr:\t %v \n", buf[len(buf)-15:])
 
-		err = fd.AddPart(bts, curNo)
+		err = fd.AddPart(buf, curNo)
+		println(err)
 		if err != nil {
 			return err
 		}
-		return nil
+
 	}
+	return nil
 }
