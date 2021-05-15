@@ -6,16 +6,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 const (
-	HashLenagth = 20
-	DataFolder = "data"
+	HashLenagth = 40
+	DataFolder  = "data"
 )
 
 type File struct {
-	Hash    string `json:"hash"`
-	Hashes  string `json:"hashes"`
+	Hash   string `json:"hash"`
+	Hashes string `json:"hashes"`
 }
 
 func NewFile(hash string, hashes string) File {
@@ -24,20 +25,20 @@ func NewFile(hash string, hashes string) File {
 		Hashes: hashes,
 	}
 	t, _ := json.Marshal(fl)
-	ioutil.WriteFile(fmt.Sprintf("%s/%s/scheme.json", DataFolder, fl.Hash), t, 0644)
+	ioutil.WriteFile(fmt.Sprintf("%s/%s/scheme.json", DataFolder, fl.Hash), t, os.ModePerm)
 	return fl
 }
 
 func (f *File) GetHashByNo(n int) string {
-	return f.Hashes[n*HashLenagth:(n+1)*HashLenagth]
+	return f.Hashes[n*HashLenagth : (n+1)*HashLenagth]
 }
 
 type DownloaderFile struct {
-	file *File
+	file        *File
 	neededParts []int
 }
 
-func NewDownloader(f *File) *DownloaderFile{
+func NewDownloader(f *File) *DownloaderFile {
 	a := make([]int, len(f.Hashes)/HashLenagth)
 	for i := range a {
 		a[i] = i
@@ -54,16 +55,21 @@ func (fd *DownloaderFile) AddPart(b []byte, no int) error {
 		fd.neededParts = append(fd.neededParts, no)
 		return errors.New("wrong hash")
 	}
+	dir := fmt.Sprintf("%s/%s", DataFolder, fd.file.Hash)
+	os.MkdirAll(dir, os.ModePerm)
 
-	err := ioutil.WriteFile(fmt.Sprintf("%s/%s/%s", DataFolder, fd.file.Hash, curHash), b, 0644)
-	if err != nil { return err }
+	path := fmt.Sprintf("%s/%s/%s", DataFolder, fd.file.Hash, curHash)
+	err := os.WriteFile(path, b, os.ModePerm)
 
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func (fd *DownloaderFile) GetNeededPart() int {
-	if len(fd.neededParts) == 0{
+	if len(fd.neededParts) == 0 {
 		return -1
 	}
 	var x int
@@ -79,7 +85,9 @@ func CheckFileExists(n string) bool {
 	}
 
 	for _, f := range files {
-		if n == f.Name() { return true }
+		if n == f.Name() {
+			return true
+		}
 	}
 	return false
 }
@@ -92,7 +100,9 @@ func GetFileByName(n string) *File {
 			bt, _ := ioutil.ReadFile(fmt.Sprintf("%s/%s/scheme.json", DataFolder, f.Name()))
 			var file File
 			err := json.Unmarshal(bt, &file)
-			if err != nil { return nil}
+			if err != nil {
+				return nil
+			}
 			return &file
 		}
 	}
@@ -100,7 +110,7 @@ func GetFileByName(n string) *File {
 }
 
 type UploaderFile struct {
-	file *File
+	file          *File
 	NeedsToUpload []int
 }
 
@@ -110,12 +120,12 @@ func NewUploader(f *File) *UploaderFile {
 		a[i] = i
 	}
 	return &UploaderFile{
-		file: f,
+		file:          f,
 		NeedsToUpload: a,
 	}
 }
 
-func (fu *UploaderFile) ErrorInUploading(no int){
+func (fu *UploaderFile) ErrorInUploading(no int) {
 	fu.NeedsToUpload = append(fu.NeedsToUpload, no)
 }
 
@@ -123,7 +133,9 @@ func (fu *UploaderFile) GetPart() ([]byte, int, error) {
 	n := fu.getNextPartNo()
 	hs := fu.file.GetHashByNo(n)
 	bts, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s", DataFolder, fu.file.Hash, hs))
-	if err != nil { return nil, -1, err}
+	if err != nil {
+		return nil, -1, err
+	}
 	return bts, n, nil
 }
 
