@@ -1,0 +1,5 @@
+{
+  "servers": [
+    {"addr": "localhost:9901"}
+  ]
+}
