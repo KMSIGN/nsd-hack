@@ -2,15 +2,16 @@
 
 import (
 	"fmt"
+	"github.com/KMSIGN/nsd-hack/MainServer/app"
+	"github.com/KMSIGN/nsd-hack/MainServer/controllers"
 	"github.com/gin-gonic/gin"
-	"go-contacts/app"
-	"go-contacts/controllers"
 	"net/http"
 	"os"
 )
 
-func main() {
 
+
+func main() {
 	router := gin.Default()
 
 	auth := router.Group("/api/user")
@@ -21,6 +22,7 @@ func main() {
 	mystat.Use(app.JwtAuthentication)
 	mystat.POST("/new", controllers.CreateFile)
 	mystat.GET("/list", controllers.GetFilesFor)
+	mystat.GET("/get", controllers.GetFile)
 
 	messages := router.Group("/api/messages")
 	messages.Use(app.JwtAuthentication)
@@ -35,7 +37,7 @@ func main() {
 
 	fmt.Println(port)
 
-	err := http.ListenAndServe(":"+port, router) //Launch the app, visit localhost:8000/api
+	err := http.ListenAndServe(":"+port, router)
 	if err != nil {
 		fmt.Print(err)
 	}

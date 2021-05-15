@@ -2,8 +2,8 @@ package models
 
 import (
 	"fmt"
+	u "github.com/KMSIGN/nsd-hack/MainServer/utils"
 	"github.com/jinzhu/gorm"
-	u "go-contacts/utils"
 )
 
 type File struct {
@@ -15,6 +15,7 @@ type File struct {
 	PublicHashes string `json:"public_hashes"`
 	UserId int	  `json:"userid"`
 	ServerAddr string `json:"server_addr"`
+	Cached string `json:"cached" ;sql:"-"`
 }
 
 func (file *File) Validate() (map[string]interface{}, bool) {
@@ -27,7 +28,7 @@ func (file *File) Validate() (map[string]interface{}, bool) {
 	return u.Message(true, "success"), true
 }
 
-func (file *File) Create() (map[string]interface{}) {
+func (file *File) Create() map[string]interface{} {
 
 	if resp, ok := file.Validate(); !ok {
 		return resp

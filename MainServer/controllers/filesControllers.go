@@ -3,9 +3,9 @@ package controllers
 import (
 	"bufio"
 	"encoding/json"
+	"github.com/KMSIGN/nsd-hack/MainServer/models"
+	u "github.com/KMSIGN/nsd-hack/MainServer/utils"
 	"github.com/gin-gonic/gin"
-	"go-contacts/models"
-	u "go-contacts/utils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -21,12 +21,19 @@ func CreateFile(c *gin.Context) {
 		return
 	}
 
-	serverAddr, err := GetFileServer()
-	if err != nil {
-		c.JSON(http.StatusServiceUnavailable, map[string]string{"message":"No fileserver found"})
-		c.Abort()
-		return
+	var serverAddr string
+
+	if file.Cached != "" {
+		serverAddr = file.Cached
+	} else {
+		serverAddr, err = GetFileServer()
+		if err != nil {
+			c.JSON(http.StatusServiceUnavailable, map[string]string{"message":"No fileserver found"})
+			c.Abort()
+			return
+		}
 	}
+
 	file.ServerAddr = serverAddr
 
 	data := url.Values{
