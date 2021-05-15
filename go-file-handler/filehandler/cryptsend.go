@@ -12,6 +12,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/KMSIGN/nsd-hack/go-file-handler/encrypt"
 )
 
 func CryptSend(conn net.Conn, file *os.File, key []byte) (err error) {
@@ -54,7 +56,7 @@ func CryptSend(conn net.Conn, file *os.File, key []byte) (err error) {
 	return nil
 }
 
-func CryptResend(conn net.Conn, file *os.File, key []byte) error {
+func CryptResend(conn net.Conn, file *os.File, encrypter *encrypt.Aes) error {
 	buf := make([]byte, bufferSize)
 	connReader := bufio.NewReader(conn)
 
@@ -67,33 +69,26 @@ func CryptResend(conn net.Conn, file *os.File, key []byte) error {
 			break
 		}
 
-		position, err := strconv.Atoi(message)
+		position, err := strconv.Atoi(message[:len(message)-1])
 		if err != nil {
 			return err
 		}
 
-		_, err = file.ReadAt(buf, int64(position*bufferSize))
+		n, err := file.ReadAt(buf, int64(position*bufferSize))
 		if err != nil {
 			if err != io.EOF {
-				log.Fatal(err)
+				return err
 			}
+		}
+		if n == 0 {
 			break
 		}
 
-		block, err := aes.NewCipher(key)
-		if err != nil {
-			return err
-		}
-		cipherText := make([]byte, aes.BlockSize+len(buf))
-		iv := cipherText[:aes.BlockSize]
-		if _, err = io.ReadFull(rand.Reader, iv); err != nil {
-			return err
-		}
+		encBuf := encrypter.Encrypt(buf)
 
-		stream := cipher.NewCFBEncrypter(block, iv)
-		stream.XORKeyStream(cipherText[aes.BlockSize:], buf)
+		//fmt.Printf("mystr:\t %v \n", encBuf[len(encBuf)-15:])
 
-		conn.Write(cipherText)
+		conn.Write(encBuf)
 	}
 
 	return nil
