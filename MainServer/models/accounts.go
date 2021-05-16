@@ -1,9 +1,9 @@
 package models
 
 import (
+	u "github.com/KMSIGN/nsd-hack/MainServer/utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
-	u "go-contacts/utils"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 )
@@ -17,6 +17,7 @@ type Account struct {
 	gorm.Model
 	Login    string `json:"login"`
 	Password string `json:"password"`
+	TelegToken string `json:"teleg_token"`
 	Token    string `json:"token" ;sql:"-"`
 }
 
@@ -32,7 +33,7 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Connection error. Please retry"), false
 	}
 	if temp.Login != "" {
-		return u.Message(false, "Email address already in use by another user."), false
+		return u.Message(false, "Login already in use by another user."), false
 	}
 
 	return u.Message(false, "Requirement passed"), true
@@ -96,9 +97,19 @@ func Login(login string, password string) (map[string]interface{}) {
 }
 
 func GetUser(u uint) *Account {
-
 	acc := &Account{}
 	GetDB().Table("accounts").Where("id = ?", u).First(acc)
+	if acc.Login == "" { //User not found!
+		return nil
+	}
+
+	acc.Password = ""
+	return acc
+}
+
+func GetUserByToken(t string) *Account {
+	acc := &Account{}
+	GetDB().Table("accounts").Where("teleg_token = ?", t).First(acc)
 	if acc.Login == "" { //User not found!
 		return nil
 	}

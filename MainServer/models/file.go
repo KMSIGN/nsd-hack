@@ -11,6 +11,7 @@ type File struct {
 	Name   string `json:"name"`
 	Status string `json:"status"`
 	Hash string   `json:"hash"`
+	Size int 	  `json:"size"`
 	Hashes string `json:"hashes" ;sql:"-"`
 	PublicHashes string `json:"public_hashes"`
 	UserId int	  `json:"userid"`
@@ -48,6 +49,27 @@ func GetFiles(userid int) []File {
 		return nil
 	}
 	return file
+}
+
+func GetFilesSizeSum(userid int) int {
+	var	file []File
+	err := GetDB().Table("files").Where("user_id = ?", userid).Find(&file).Error
+	if err != nil {
+		return 0
+	}
+	sum := 0
+	for _, v := range file {
+		sum += v.Size
+	}
+	return sum
+}
+func GetFilesCount(userid int) int {
+	var	file []File
+	err := GetDB().Table("files").Where("user_id = ?", userid).Find(&file).Error
+	if err != nil {
+		return 0
+	}
+	return len(file)
 }
 
 func GetFile(id int) *File {

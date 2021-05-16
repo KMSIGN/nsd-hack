@@ -1,9 +1,9 @@
 package app
 
 import (
+	"github.com/KMSIGN/nsd-hack/MainServer/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"go-contacts/models"
 	"net/http"
 	"os"
 	"strings"

@@ -12,7 +12,7 @@ import (
 )
 
 func CreateFile(c *gin.Context) {
-	user := c.GetInt("user") //Grab the id of the user that send the request
+	user := c.MustGet("user") //Grab the id of the user that send the request
 	file := &models.File{}
 
 	err := json.NewDecoder(c.Request.Body).Decode(file)
@@ -42,7 +42,7 @@ func CreateFile(c *gin.Context) {
 	}
 	resp, err := http.PostForm(serverAddr+"/upload", data)
 	if err != nil {
-		c.JSON(http.StatusServiceUnavailable, map[string]string{"message":"No fileserver found"})
+		c.JSON(http.StatusServiceUnavailable, map[string]string{"message":"Fileserver response error"})
 		c.Abort()
 		return
 	}
@@ -50,12 +50,12 @@ func CreateFile(c *gin.Context) {
 	reader := bufio.NewReader(resp.Body)
 	res, err := reader.ReadByte()
 	if err != nil {
-		c.JSON(http.StatusServiceUnavailable, map[string]string{"message":"No fileserver found"})
+		c.JSON(http.StatusServiceUnavailable, map[string]string{"message":"Fileserver bad response"})
 		c.Abort()
 		return
 	}
 
-	file.UserId = user
+	file.UserId = int(user.(uint))
 	response := file.Create()
 	response["fileserverTcpPort"] = string(res)
 	c.JSON(http.StatusOK, response)
@@ -79,7 +79,6 @@ func GetFileServer() (string, error) {
 }
 
 func GetFilesFor(c *gin.Context) {
-
 	id := c.GetInt("user")
 	data := models.GetFiles(id)
 	resp := u.Message(true, "success")

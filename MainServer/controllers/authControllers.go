@@ -2,9 +2,10 @@ package controllers
 
 import (
 	"encoding/json"
+	"github.com/KMSIGN/nsd-hack/MainServer/models"
 	"github.com/gin-gonic/gin"
-	"go-contacts/models"
 	"log"
+	"math/rand"
 	"net/http"
 )
 
@@ -17,6 +18,7 @@ func CreateAccount(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
 		return
 	}
+	account.TelegToken = RandomString(30)
 
 	resp := account.Create() //Create account
 	c.JSON(http.StatusOK, resp)
@@ -32,4 +34,14 @@ func Authenticate(c *gin.Context) {
 
 	resp := models.Login(account.Login, account.Password)
 	c.JSON(http.StatusOK, resp)
+}
+
+func RandomString(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+	s := make([]rune, n)
+	for i := range s {
+		s[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(s)
 }

@@ -3,8 +3,8 @@ package models
 
 import (
 	"fmt"
+	u "github.com/KMSIGN/nsd-hack/MainServer/utils"
 	"github.com/jinzhu/gorm"
-	u "go-contacts/utils"
 )
 
 type Message struct {
