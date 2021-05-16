@@ -47,8 +47,7 @@ func CreateFile(c *gin.Context) {
 		return
 	}
 
-	reader := bufio.NewReader(resp.Body)
-	res, err := reader.ReadString('\n')
+	res, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		c.JSON(http.StatusServiceUnavailable, map[string]string{"message":"Fileserver bad response"})
 		c.Abort()
