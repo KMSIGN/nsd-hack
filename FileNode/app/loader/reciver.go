@@ -3,7 +3,6 @@ package loader
 import (
 	"fmt"
 	"io"
-	"log"
 	"net"
 
 	"github.com/KMSIGN/nsd-hack/server/app/file"
@@ -17,7 +16,6 @@ func SrvFileLoader(filename string, hashes string) (int, error) {
 		return 0, err
 	}
 	addr := fmt.Sprintf(":%d", pt)
-	log.Printf(addr)
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		return 0, err
@@ -25,12 +23,12 @@ func SrvFileLoader(filename string, hashes string) (int, error) {
 
 	go func() {
 		conn, _ := listener.Accept()
-		handle(conn, listener, filename, hashes)
+		handleRecive(conn, listener, filename, hashes)
 	}()
 	return pt, nil
 }
 
-func handle(conn net.Conn, listener net.Listener, name string, hashes string) error {
+func handleRecive(conn net.Conn, listener net.Listener, name string, hashes string) error {
 	defer conn.Close()
 	defer listener.Close()
 
@@ -55,13 +53,10 @@ func handle(conn net.Conn, listener net.Listener, name string, hashes string) er
 
 		io.ReadFull(conn, buf)
 
-		//fmt.Printf("mystr:\t %v \n", buf[len(buf)-15:])
+		//fmt.Printf("start:\t %v \n", buf[:15])
+		//fmt.Printf("end:  \t %v \n", buf[len(buf)-15:])
 
-		err = fd.AddPart(buf, curNo)
-		println(err)
-		if err != nil {
-			return err
-		}
+		fd.AddPart(buf, curNo)
 
 	}
 	return nil

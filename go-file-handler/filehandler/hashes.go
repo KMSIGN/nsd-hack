@@ -31,8 +31,10 @@ func NewHashUnionFromFile(file *os.File, encrypter *encrypt.Aes) (*HashUnion, er
 	encHash := crypto.SHA1.New()
 	sumHash := crypto.SHA1.New()
 
-	encHashes := []string{}
-	hashes := []string{}
+	encHashes := make([]string, hashCount)
+	hashes := make([]string, hashCount)
+
+	partIndex := 0
 
 	for {
 		_, err := reader.Read(buf)
@@ -46,14 +48,16 @@ func NewHashUnionFromFile(file *os.File, encrypter *encrypt.Aes) (*HashUnion, er
 		sumHash.Write(buf)
 
 		hash.Write(buf)
-		hashes = append(hashes, fmt.Sprintf("%x", encHash.Sum(nil)))
-		encHash.Reset()
+		hashes[partIndex] = fmt.Sprintf("%x", hash.Sum(nil))
+		hash.Reset()
 
 		encBuf := encrypter.Encrypt(buf)
 
 		encHash.Write(encBuf)
-		encHashes = append(hashes, fmt.Sprintf("%x", encHash.Sum(nil)))
+		encHashes[partIndex] = fmt.Sprintf("%x", encHash.Sum(nil))
 		encHash.Reset()
+
+		partIndex++
 
 	}
 	file.Seek(0, 0)

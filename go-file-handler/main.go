@@ -1,8 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"io"
+	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -14,41 +16,102 @@ import (
 )
 
 func main() {
-	encrypter, err := encrypt.New(16, "abcgdjfuthatishg")
+	encrypter, err := encrypt.New(16, "abcgdjfuthatishg", []byte("aaaaaaaaaaaaaaaa"))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
+	}
+	send(encrypter)
+	recive(encrypter)
+}
+
+func send(encrypter *encrypt.Aes) {
+
+	fileupl, err := filehandler.NewSender("./test/input/testbin", encrypter)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	file, err := os.Open("/home/royalcat/neiro.7z")
+	hashjson, err := json.Marshal(fileupl.HashUnion)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	_, hashmap, err := filehandler.CalcCryptHashMap(file, encrypter)
+	err = os.WriteFile("testbin.json", hashjson, os.ModePerm)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	fmt.Printf("%s\n", strings.Join(hashmap, " , "))
-	file.Seek(0, 0)
 
-	data := url.Values{"hash": {"/home/royalcat/neiro.7z"}, "hashes": {strings.Join(hashmap, "")}}
-	resp, err := http.PostForm("http://localhost:8080/upload", data)
+	data := url.Values{
+		"hash":   {fileupl.HashUnion.SumHash},
+		"hashes": {strings.Join(fileupl.HashUnion.EncHashes, "")},
+	}
+
+	//fmt.Printf("%s\n", strings.Join(fileupl.HashUnion.EncHashes, " , "))
+	//fmt.Printf("%s\n", strings.Join(fileupl.HashUnion.Hashes, " , "))
+
+	resp, err := http.PostForm("http://localhost:8081/upload", data)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	route := "localhost" + string(body)
 
 	conn, err := net.Dial("tcp", route)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	err = filehandler.CryptResend(conn, file, encrypter)
+	err = fileupl.CryptSend(conn)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
+	}
+}
+
+func recive(encrypter *encrypt.Aes) {
+
+	hashjson, err := ioutil.ReadFile("testbin.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hashunion := &filehandler.HashUnion{}
+	err = json.Unmarshal(hashjson, hashunion)
+	if err != nil {
+		log.Fatal(err)
+	}
+	filercv, err := filehandler.NewReciver("./test/output/testbin", encrypter, hashunion)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	data := url.Values{
+		"hash": {filercv.HashUnion.SumHash},
+	}
+
+	//fmt.Printf("%s\n", strings.Join(fileupl.HashUnion.EncHashes, " , "))
+	//fmt.Printf("%s\n", strings.Join(fileupl.HashUnion.Hashes, " , "))
+
+	resp, err := http.PostForm("http://localhost:8081/download", data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	route := "localhost" + string(body)
+
+	conn, err := net.Dial("tcp", route)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = filercv.CryptRecive(conn)
+	if err != nil {
+		log.Fatal(err)
 	}
 }

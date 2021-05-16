@@ -129,14 +129,13 @@ func (fu *UploaderFile) ErrorInUploading(no int) {
 	fu.NeedsToUpload = append(fu.NeedsToUpload, no)
 }
 
-func (fu *UploaderFile) GetPart() ([]byte, int, error) {
-	n := fu.getNextPartNo()
+func (fu *UploaderFile) GetPart(n int) ([]byte, error) {
 	hs := fu.file.GetHashByNo(n)
 	bts, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s", DataFolder, fu.file.Hash, hs))
 	if err != nil {
-		return nil, -1, err
+		return nil, err
 	}
-	return bts, n, nil
+	return bts, nil
 }
 
 func (fu *UploaderFile) getNextPartNo() int {

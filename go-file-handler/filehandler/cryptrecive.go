@@ -1,48 +1,36 @@
 package filehandler
 
 import (
-	"bufio"
-	"crypto/aes"
-	"crypto/cipher"
+	"fmt"
+	"io"
 	"net"
-	"os"
 )
 
-func CryptRecive(conn net.Conn, file *os.File, hashes []string, key []byte) (err error) {
-	writer := bufio.NewWriter(file)
-	buf := make([]byte, bufferSize)
-
-	cipherText := make([]byte, aes.BlockSize+len(buf))
-
-	iv := []byte{}
-	stream := (cipher.Stream)(nil)
-
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return err
-	}
+func (rcv *FileReciver) CryptRecive(conn net.Conn) (err error) {
+	buf := make([]byte, partSize)
 
 	for {
 
+		prtNo := rcv.GetNeededPart()
+		if prtNo == -1 {
+			fmt.Fprintf(conn, "end\n")
+			break
+		}
+		fmt.Fprintf(conn, "%d\n", prtNo)
+
+		_, err := io.ReadFull(conn, buf)
 		if err != nil {
 			return err
 		}
 
-		if iv == nil {
-			iv = cipherText[:aes.BlockSize]
-			cipherText = cipherText[aes.BlockSize:]
+		//fmt.Printf("enc start:\t %v \n", buf[:15])
+		//fmt.Printf("enc end:  \t %v \n", buf[len(buf)-15:])
 
-			stream = cipher.NewCFBDecrypter(block, iv)
-		}
-
-		conn.Read(buf)
-
-		stream.XORKeyStream(cipherText[aes.BlockSize:], buf)
-
-		_, err = writer.Write(buf)
+		err = rcv.AddPart(buf, prtNo)
 		if err != nil {
 			return err
 		}
+
 	}
 
 	return nil

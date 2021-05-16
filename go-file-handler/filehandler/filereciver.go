@@ -2,20 +2,21 @@ package filehandler
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/KMSIGN/nsd-hack/go-file-handler/encrypt"
 )
 
-type FileDownloader struct {
+type FileReciver struct {
 	file        *os.File
 	encrypter   *encrypt.Aes
 	partCount   *int
-	hashes      *HashUnion
+	HashUnion   *HashUnion
 	neededParts []int
 }
 
-func NewDownloader(path string, encrypter *encrypt.Aes, hashes *HashUnion) (*FileDownloader, error) {
+func NewReciver(path string, encrypter *encrypt.Aes, hashes *HashUnion) (*FileReciver, error) {
 	f, err := os.Create(path)
 	if err != nil {
 		return nil, err
@@ -26,27 +27,27 @@ func NewDownloader(path string, encrypter *encrypt.Aes, hashes *HashUnion) (*Fil
 		a[i] = i
 	}
 
-	return &FileDownloader{
+	return &FileReciver{
 		file:        f,
 		partCount:   &hashes.PartCount,
-		hashes:      hashes,
+		HashUnion:   hashes,
+		encrypter:   encrypter,
 		neededParts: a,
 	}, nil
 }
 
-func (fd *FileDownloader) AddPart(b []byte, no int) error {
-	curEncHash := fd.hashes.EncHashes[no]
-	if !checkHash(b, curEncHash) {
-		fd.neededParts = append(fd.neededParts, no)
-		return errors.New("wrong encoded hash")
-	}
+func (fd *FileReciver) AddPart(b []byte, no int) error {
 
 	decrypted := fd.encrypter.Decrypt(b)
 
-	curHash := fd.hashes.Hashes[no]
+	fmt.Printf("rec dec start:\t %v \n", decrypted[:15])
+	fmt.Printf("rec dec end:  \t %v \n", decrypted[len(decrypted)-15:])
+
+	curHash := fd.HashUnion.Hashes[no]
 	if !checkHash(b, curHash) {
 		fd.neededParts = append(fd.neededParts, no)
 		return errors.New("wrong decrypted hash")
+
 	}
 	_, err := fd.file.WriteAt(decrypted, int64(no*partSize))
 
@@ -57,7 +58,7 @@ func (fd *FileDownloader) AddPart(b []byte, no int) error {
 	return nil
 }
 
-func (fd *FileDownloader) GetNeededPart() int {
+func (fd *FileReciver) GetNeededPart() int {
 	if len(fd.neededParts) == 0 {
 		return -1
 	}

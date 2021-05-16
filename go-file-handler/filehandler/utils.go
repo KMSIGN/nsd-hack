@@ -9,6 +9,7 @@ const partSize = 8 * 1024 * 1024
 
 func checkHash(b []byte, h string) bool {
 	hash := crypto.SHA1.New()
-	hashstring := fmt.Sprintf("%x", hash.Sum(b))
+	hash.Write(b)
+	hashstring := fmt.Sprintf("%x", hash.Sum(nil))
 	return hashstring == h
 }
