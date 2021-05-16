@@ -22,9 +22,14 @@ func main() {
 		Name: "filedu",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "url",
-				Aliases: []string{"u"},
-				Usage:   "url of main server (like localhost:8081)",
+				Name:    "addres",
+				Aliases: []string{"a"},
+				Usage:   "address of main server (like localhost)",
+			},
+			&cli.StringFlag{
+				Name:    "port",
+				Aliases: []string{"p"},
+				Usage:   "port of main server (like 8081)",
 			},
 			&cli.StringFlag{
 				Name:    "file",
@@ -51,7 +56,8 @@ func main() {
 				Usage:   "upload file to server",
 				Action: func(c *cli.Context) error {
 					filePath := c.String("file")
-					serverUrl := c.String("url")
+					addres := c.String("addres")
+					port := c.String("port")
 					keys := c.String("key")
 					if keys == "" {
 						keys = "keys.key"
@@ -60,7 +66,7 @@ func main() {
 					if hashesJson == "" {
 						hashesJson = "hashes.json"
 					}
-					send(filePath, keys, hashesJson, serverUrl)
+					send(filePath, keys, hashesJson, addres, port)
 					return nil
 				},
 			},
@@ -70,7 +76,8 @@ func main() {
 				Usage:   "download file form server",
 				Action: func(c *cli.Context) error {
 					filePath := c.String("file")
-					serverUrl := c.String("url")
+					addres := c.String("addres")
+					port := c.String("port")
 					keys := c.String("key")
 					if keys == "" {
 						keys = "keys.key"
@@ -79,7 +86,7 @@ func main() {
 					if hashesJson == "" {
 						hashesJson = "hashes.json"
 					}
-					recive(filePath, keys, hashesJson, serverUrl)
+					recive(filePath, keys, hashesJson, addres, port)
 					return nil
 				},
 			},
@@ -91,7 +98,7 @@ func main() {
 	}
 }
 
-func send(filepath string, keypath string, hashpath string, serverurl string) {
+func send(filepath string, keypath string, hashpath string, addres string, port string) {
 
 	encrypter, err := encrypt.New(16, "abcgdjfuthatishg", []byte("aaaaaaaaaaaaaaaa"))
 	if err != nil {
@@ -123,7 +130,7 @@ func send(filepath string, keypath string, hashpath string, serverurl string) {
 	//fmt.Printf("%s\n", strings.Join(fileupl.HashUnion.EncHashes, " , "))
 	//fmt.Printf("%s\n", strings.Join(fileupl.HashUnion.Hashes, " , "))
 
-	resp, err := http.PostForm(fmt.Sprintf("http://%s/upload", serverurl), data)
+	resp, err := http.PostForm(fmt.Sprintf("http://%s:%s/upload", addres, port), data)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -132,7 +139,7 @@ func send(filepath string, keypath string, hashpath string, serverurl string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	route := "localhost" + string(body)
+	route := addres + string(body)
 
 	conn, err := net.Dial("tcp", route)
 	if err != nil {
@@ -145,7 +152,7 @@ func send(filepath string, keypath string, hashpath string, serverurl string) {
 	}
 }
 
-func recive(filepath string, keypath string, hashpath string, serverurl string) {
+func recive(filepath string, keypath string, hashpath string, addres string, port string) {
 
 	encrypter, err := encrypt.FromFile(keypath)
 	if err != nil {
@@ -174,7 +181,7 @@ func recive(filepath string, keypath string, hashpath string, serverurl string) 
 	//fmt.Printf("%s\n", strings.Join(fileupl.HashUnion.EncHashes, " , "))
 	//fmt.Printf("%s\n", strings.Join(fileupl.HashUnion.Hashes, " , "))
 
-	resp, err := http.PostForm(fmt.Sprintf("http://%s/download", serverurl), data)
+	resp, err := http.PostForm(fmt.Sprintf("http://%s:%s/download", addres, port), data)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -187,7 +194,7 @@ func recive(filepath string, keypath string, hashpath string, serverurl string) 
 		log.Fatal(string(body))
 	}
 
-	route := "localhost" + string(body)
+	route := addres + string(body)
 
 	conn, err := net.Dial("tcp", route)
 	if err != nil {

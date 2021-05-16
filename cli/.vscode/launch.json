@@ -11,8 +11,10 @@
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "args": [
-                "--url",
-                "localhost:8081",
+                "--addres",
+                "localhost",
+                "--port",
+                "8081",
                 "--file",
                 "testbin",
                 "upload"
@@ -25,8 +27,10 @@
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "args": [
-                "--url",
-                "localhost:8081",
+                "--addres",
+                "localhost",
+                "--port",
+                "8081",
                 "--file",
                 "testbino",
                 "download"
