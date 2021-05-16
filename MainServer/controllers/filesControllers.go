@@ -7,6 +7,7 @@ import (
 	u "github.com/KMSIGN/nsd-hack/MainServer/utils"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -23,22 +24,21 @@ func CreateFile(c *gin.Context) {
 
 	var serverAddr string
 
-	if file.Cached != "" {
-		serverAddr = file.Cached
-	} else {
-		serverAddr, err = GetFileServer()
-		if err != nil {
-			c.JSON(http.StatusServiceUnavailable, map[string]string{"message":"No fileserver found"})
-			c.Abort()
-			return
-		}
+
+	serverAddr, err = GetFileServer()
+	if err != nil {
+		c.JSON(http.StatusServiceUnavailable, map[string]string{"message":"No fileserver found"})
+		c.Abort()
+		return
 	}
 
 	file.ServerAddr = serverAddr
+	log.Println(serverAddr)
 
 	data := url.Values{
-		"hash":       {file.Hash},
-		"hashes": {file.Hashes},
+		"hash":        {file.Hash},
+		"hashes": 	   {file.Hashes},
+		"LastPartSize":{file.LastPartSize},
 	}
 	resp, err := http.PostForm(serverAddr+"/upload", data)
 	if err != nil {

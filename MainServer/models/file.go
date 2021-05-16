@@ -12,6 +12,7 @@ type File struct {
 	Status string `json:"status"`
 	Hash string   `json:"hash"`
 	Size int 	  `json:"size"`
+	LastPartSize string `json:"LastPartSize"`
 	Hashes string `json:"hashes" ;sql:"-"`
 	PublicHashes string `json:"public_hashes"`
 	UserId int	  `json:"userid"`
