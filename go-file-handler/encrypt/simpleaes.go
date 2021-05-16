@@ -5,12 +5,19 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
+	"strconv"
+	"strings"
 )
 
 type Aes struct {
 	enc, dec cipher.BlockMode
 	aes      cipher.Block
+	size     int
+	key      []byte
 	iv       []byte
 }
 
@@ -37,7 +44,32 @@ func New(size int, key string, iv []byte) (*Aes, error) {
 	}
 	enc := cipher.NewCBCEncrypter(aes, iv)
 	dec := cipher.NewCBCDecrypter(aes, iv)
-	return &Aes{enc, dec, aes, iv}, nil
+	return &Aes{enc, dec, aes, size, []byte(key), iv}, nil
+}
+
+func FromFile(path string) (*Aes, error) {
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	contentstr := fmt.Sprintf("%x", content)
+	params := strings.Split(contentstr, ":")
+	size, err := strconv.Atoi(params[0])
+	if err != nil {
+		return nil, err
+	}
+
+	return New(size, params[1], []byte(params[2]))
+}
+
+func (me *Aes) Save(path string) error {
+	content := fmt.Sprintf("%x:%x:%x", me.size, me.key, me.iv)
+
+	err := ioutil.WriteFile(path, []byte(content), os.ModePerm)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (me *Aes) padSlice(src []byte) []byte {
