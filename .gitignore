@@ -1,0 +1,4 @@
+go-file-wrapper/libsha1map.h
+go-file-wrapper/libsha1map.so
+FileNode/data/*
+go-file-handler/testbin.json

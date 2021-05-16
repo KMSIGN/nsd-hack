@@ -22,12 +22,14 @@ type Aes struct {
 // The key will be padded to the given size if needed.
 // An IV is created as a series of NULL bytes of necessary length
 // when there is no iv string passed as 3rd value to function.
-func New(size int, key string) (*Aes, error) {
+func New(size int, key string, iv []byte) (*Aes, error) {
 	padded := make([]byte, size)
 	copy(padded, []byte(key))
 
-	iv := make([]byte, size)
-	io.ReadFull(rand.Reader, iv)
+	if iv == nil {
+		iv = make([]byte, size)
+		io.ReadFull(rand.Reader, iv)
+	}
 
 	aes, err := aes.NewCipher(padded)
 	if err != nil {
