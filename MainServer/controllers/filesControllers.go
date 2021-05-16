@@ -38,7 +38,7 @@ func CreateFile(c *gin.Context) {
 	data := url.Values{
 		"hash":        {file.Hash},
 		"hashes": 	   {file.Hashes},
-		"LastPartSize":{file.LastPartSize},
+		"lastPartSize":{file.LastPartSize},
 	}
 	resp, err := http.PostForm(serverAddr+"/upload", data)
 	if err != nil {
