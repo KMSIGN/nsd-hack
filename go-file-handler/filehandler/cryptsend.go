@@ -2,7 +2,6 @@ package filehandler
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"net"
 	"strconv"
@@ -34,8 +33,7 @@ func (snd *FileSender) CryptSend(conn net.Conn) error {
 			}
 		}
 
-		fmt.Printf("send dec start:\t %v \n", buf[:15])
-		fmt.Printf("send dec end:  \t %v \n", buf[len(buf)-15:])
+		printBuf("send dec", buf)
 
 		encBuf := snd.encrypter.Encrypt(buf)
 

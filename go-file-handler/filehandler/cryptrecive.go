@@ -16,17 +16,30 @@ func (rcv *FileReciver) CryptRecive(conn net.Conn) (err error) {
 			fmt.Fprintf(conn, "end\n")
 			break
 		}
-		fmt.Fprintf(conn, "%d\n", prtNo)
-
-		_, err := io.ReadFull(conn, buf)
+		_, err = fmt.Fprintf(conn, "%d\n", prtNo)
 		if err != nil {
 			return err
 		}
 
-		//fmt.Printf("enc start:\t %v \n", buf[:15])
-		//fmt.Printf("enc end:  \t %v \n", buf[len(buf)-15:])
+		if prtNo == *rcv.partCount-1 {
+			n, err := io.ReadFull(conn, buf[:rcv.HashUnion.LastPartSize])
+			if err != nil || n == 0 {
+				return err
+			}
+		} else {
+			n, err := io.ReadFull(conn, buf)
+			if err != nil || n == 0 {
+				return err
+			}
+		}
 
-		err = rcv.AddPart(buf, prtNo)
+		printBuf("rec enc", buf)
+
+		decrypted := rcv.encrypter.Decrypt(buf)
+
+		printBuf("rec dec", decrypted)
+
+		err = rcv.AddPart(decrypted, prtNo)
 		if err != nil {
 			return err
 		}

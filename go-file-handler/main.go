@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -41,8 +42,9 @@ func send(encrypter *encrypt.Aes) {
 	}
 
 	data := url.Values{
-		"hash":   {fileupl.HashUnion.SumHash},
-		"hashes": {strings.Join(fileupl.HashUnion.EncHashes, "")},
+		"hash":         {fileupl.HashUnion.SumHash},
+		"hashes":       {strings.Join(fileupl.HashUnion.EncHashes, "")},
+		"lastPartSize": {fmt.Sprint(fileupl.HashUnion.LastPartSize)},
 	}
 
 	//fmt.Printf("%s\n", strings.Join(fileupl.HashUnion.EncHashes, " , "))

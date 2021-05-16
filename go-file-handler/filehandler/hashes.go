@@ -12,10 +12,11 @@ import (
 )
 
 type HashUnion struct {
-	PartCount int      `json:"partCount"`
-	Hashes    []string `json:"hashes"`
-	EncHashes []string `json:"encHashes"`
-	SumHash   string   `json:"sumHash"`
+	PartCount    int      `json:"partCount"`
+	LastPartSize int      `json:"lastPartSize"`
+	Hashes       []string `json:"hashes"`
+	EncHashes    []string `json:"encHashes"`
+	SumHash      string   `json:"sumHash"`
 }
 
 func NewHashUnionFromFile(file *os.File, encrypter *encrypt.Aes) (*HashUnion, error) {
@@ -35,15 +36,18 @@ func NewHashUnionFromFile(file *os.File, encrypter *encrypt.Aes) (*HashUnion, er
 	hashes := make([]string, hashCount)
 
 	partIndex := 0
+	lastPartSize := 0
 
 	for {
-		_, err := reader.Read(buf)
+		n, err := reader.Read(buf)
 		if err != nil {
 			if err != io.EOF {
 				return nil, err
 			}
 			break
 		}
+
+		lastPartSize = n
 
 		sumHash.Write(buf)
 
@@ -63,9 +67,10 @@ func NewHashUnionFromFile(file *os.File, encrypter *encrypt.Aes) (*HashUnion, er
 	file.Seek(0, 0)
 
 	return &HashUnion{
-		PartCount: hashCount,
-		Hashes:    hashes,
-		EncHashes: encHashes,
-		SumHash:   fmt.Sprintf("%x", (sumHash.Sum(nil))),
+		PartCount:    hashCount,
+		Hashes:       hashes,
+		EncHashes:    encHashes,
+		LastPartSize: lastPartSize,
+		SumHash:      fmt.Sprintf("%x", (sumHash.Sum(nil))),
 	}, nil
 }

@@ -15,14 +15,16 @@ const (
 )
 
 type File struct {
-	Hash   string `json:"hash"`
-	Hashes string `json:"hashes"`
+	Hash         string `json:"hash"`
+	Hashes       string `json:"hashes"`
+	LastPartSize int    `json:"lastPartSize"`
 }
 
-func NewFile(hash string, hashes string) File {
+func NewFile(hash string, hashes string, lastPartSize int) File {
 	fl := File{
-		Hash:   hash,
-		Hashes: hashes,
+		Hash:         hash,
+		Hashes:       hashes,
+		LastPartSize: lastPartSize,
 	}
 	t, _ := json.Marshal(fl)
 	ioutil.WriteFile(fmt.Sprintf("%s/%s/scheme.json", DataFolder, fl.Hash), t, os.ModePerm)
@@ -59,10 +61,19 @@ func (fd *DownloaderFile) AddPart(b []byte, no int) error {
 	os.MkdirAll(dir, os.ModePerm)
 
 	path := fmt.Sprintf("%s/%s/%s", DataFolder, fd.file.Hash, curHash)
-	err := os.WriteFile(path, b, os.ModePerm)
 
-	if err != nil {
-		return err
+	lastNo := (len(fd.file.Hashes) / 40) - 1
+	if no == lastNo {
+		err := os.WriteFile(path, b[:fd.file.LastPartSize], os.ModePerm)
+		if err != nil {
+			return err
+		}
+
+	} else {
+		err := os.WriteFile(path, b, os.ModePerm)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
