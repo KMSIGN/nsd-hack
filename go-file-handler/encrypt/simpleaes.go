@@ -52,18 +52,18 @@ func FromFile(path string) (*Aes, error) {
 	if err != nil {
 		return nil, err
 	}
-	contentstr := fmt.Sprintf("%x", content)
+	contentstr := string(content)
 	params := strings.Split(contentstr, ":")
 	size, err := strconv.Atoi(params[0])
 	if err != nil {
 		return nil, err
 	}
 
-	return New(size, params[1], []byte(params[2]))
+	return New(size, string(params[1]), []byte(params[2]))
 }
 
 func (me *Aes) Save(path string) error {
-	content := fmt.Sprintf("%x:%x:%x", me.size, me.key, me.iv)
+	content := fmt.Sprintf("%d:%s:%s", me.size, me.key, me.iv)
 
 	err := ioutil.WriteFile(path, []byte(content), os.ModePerm)
 	if err != nil {
