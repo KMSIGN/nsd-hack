@@ -63,8 +63,8 @@ func handleSend(conn net.Conn, listener net.Listener, fu *file.UploaderFile) err
 			return err
 		}
 
-		fmt.Printf("start:\t %v \n", dat[:15])
-		fmt.Printf("end:  \t %v \n", dat[len(dat)-15:])
+		//fmt.Printf("start:\t %v \n", dat[:15])
+		//fmt.Printf("end:  \t %v \n", dat[len(dat)-15:])
 
 		_, err = conn.Write(dat)
 		if err != nil {
