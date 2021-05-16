@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/KMSIGN/nsd-hack/server/app/file"
 	"github.com/KMSIGN/nsd-hack/server/app/loader"
 
@@ -11,8 +13,13 @@ import (
 func handleUpload(c *gin.Context) {
 	hashes := c.PostForm("hashes")
 	hash := c.PostForm("hash")
+	lastPartSize, err := strconv.Atoi(c.PostForm("lastPartSize"))
+	if err != nil {
+		c.String(500, "Something go wrong: ", err)
+		return
+	}
 
-	port, err := loader.SrvFileLoader(hash, hashes)
+	port, err := loader.SrvFileLoader(hash, hashes, lastPartSize)
 	if err != nil {
 		c.String(500, "Something go wrong: ", err)
 		return
@@ -20,19 +27,18 @@ func handleUpload(c *gin.Context) {
 	c.String(200, ":%d", port)
 }
 
-func handleDownload(c *gin.Context){
-	addr := c.PostForm("addr")
+func handleDownload(c *gin.Context) {
 	name := c.PostForm("hash")
 
-	err := loader.StartUploading(addr, name)
+	port, err := loader.StartUploading(name)
 	if err != nil {
 		c.String(500, "Something go wrong: ", err)
 		return
 	}
 
-	c.String(200, "ok")
+	c.String(200, ":%d", port)
 }
 
-func handleGetFilesCount(c *gin.Context){
+func handleGetFilesCount(c *gin.Context) {
 	c.String(200, fmt.Sprintf("%d", file.GetFilesLen()))
 }

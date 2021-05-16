@@ -1,15 +1,16 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
 	router *gin.Engine
 )
 
-func Configure(){
+func Configure() {
 	router = gin.Default()
 	router.POST("/upload", handleUpload)
 	router.POST("/download", handleDownload)
@@ -17,5 +18,5 @@ func Configure(){
 }
 
 func ListenAndServe() error {
-	return http.ListenAndServe(":8080", router)
+	return http.ListenAndServe(":8081", router)
 }
