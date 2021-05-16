@@ -35,11 +35,11 @@ func (rcv *FileReciver) CryptRecive(conn net.Conn) (err error) {
 
 		printBuf("rec enc", buf)
 
-		decrypted := rcv.encrypter.Decrypt(buf)
+		//decrypted := rcv.encrypter.Decrypt(buf)
 
-		printBuf("rec dec", decrypted)
+		printBuf("rec dec", buf)
 
-		err = rcv.AddPart(decrypted, prtNo)
+		err = rcv.AddPart(buf, prtNo)
 		if err != nil {
 			return err
 		}

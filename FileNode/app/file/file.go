@@ -52,9 +52,11 @@ func NewDownloader(f *File) *DownloaderFile {
 }
 
 func (fd *DownloaderFile) AddPart(b []byte, no int) error {
+
 	curHash := fd.file.GetHashByNo(no)
 	if !checkPartHash(b, curHash) {
 		fd.neededParts = append(fd.neededParts, no)
+		log.Println("wrong decrypted hash retrying...")
 		return errors.New("wrong hash")
 	}
 	dir := fmt.Sprintf("%s/%s", DataFolder, fd.file.Hash)

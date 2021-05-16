@@ -43,7 +43,7 @@ func send(encrypter *encrypt.Aes) {
 
 	data := url.Values{
 		"hash":         {fileupl.HashUnion.SumHash},
-		"hashes":       {strings.Join(fileupl.HashUnion.EncHashes, "")},
+		"hashes":       {strings.Join(fileupl.HashUnion.Hashes, "")},
 		"lastPartSize": {fmt.Sprint(fileupl.HashUnion.LastPartSize)},
 	}
 

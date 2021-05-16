@@ -35,12 +35,12 @@ func (snd *FileSender) CryptSend(conn net.Conn) error {
 
 		printBuf("send dec", buf)
 
-		encBuf := snd.encrypter.Encrypt(buf)
+		//encBuf := snd.encrypter.Encrypt(buf)
 
 		//fmt.Printf("send enc start:\t %v \n", encBuf[:15])
 		//fmt.Printf("send enc end:  \t %v \n", encBuf[len(encBuf)-15:])
 
-		conn.Write(encBuf)
+		conn.Write(buf)
 	}
 
 	return nil

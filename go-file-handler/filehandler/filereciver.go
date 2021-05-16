@@ -1,6 +1,8 @@
 package filehandler
 
 import (
+	"errors"
+	"log"
 	"os"
 
 	"github.com/KMSIGN/nsd-hack/go-file-handler/encrypt"
@@ -36,12 +38,13 @@ func NewReciver(path string, encrypter *encrypt.Aes, hashes *HashUnion) (*FileRe
 
 func (fd *FileReciver) AddPart(b []byte, no int) error {
 
-	// curHash := fd.HashUnion.Hashes[no]
-	// if !checkHash(b, curHash) {
-	// 	fd.neededParts = append(fd.neededParts, no)
-	// 	return errors.New("wrong decrypted hash")
+	curHash := fd.HashUnion.Hashes[no]
+	if !checkHash(b, curHash) {
+		fd.neededParts = append(fd.neededParts, no)
+		log.Println("wrong decrypted hash retrying")
+		return errors.New("wrong decrypted hash")
 
-	// }
+	}
 
 	if no == *fd.partCount-1 {
 		_, err := fd.file.WriteAt(b[:fd.HashUnion.LastPartSize], int64(no*partSize))
